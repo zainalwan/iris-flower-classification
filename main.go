@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"slices"
 
 	"github.com/gocarina/gocsv"
 )
@@ -17,6 +18,13 @@ type Iris struct {
 
 func main() {
 	irisDataset := readCSV("assets/iris-dataset.csv")
+
+	specieses := []string{}
+	for _, iris := range irisDataset {
+		if !slices.Contains(specieses, iris.Species) {
+			specieses = append(specieses, iris.Species)
+		}
+	}
 
 	epoch := 1000
 	learningRate := .2
@@ -36,73 +44,36 @@ func main() {
 
 	for i := 0; i < epoch; i++ {
 		for _, iris := range irisDataset {
-			setosa := (iris.SepalLength * weights[0]) +
-				(iris.SepalWidth * weights[3]) +
-				(iris.PetalLength * weights[6]) +
-				(iris.PetalWidth * weights[9]) +
-				(1 * weights[12])
-			versicolor := (iris.SepalLength * weights[1]) +
-				(iris.SepalWidth * weights[4]) +
-				(iris.PetalLength * weights[7]) +
-				(iris.PetalWidth * weights[10]) +
-				(1 * weights[13])
-			virginica := (iris.SepalLength * weights[2]) +
-				(iris.SepalWidth * weights[5]) +
-				(iris.PetalLength * weights[8]) +
-				(iris.PetalWidth * weights[11]) +
-				(1 * weights[14])
-
-			if setosa < 0 {
-				setosa = 0
-			} else {
-				setosa = 1
+			results := make([]float64, len(specieses))
+			for j := range specieses {
+				result := (iris.SepalLength * weights[0+j]) +
+					(iris.SepalWidth * weights[3+j]) +
+					(iris.PetalLength * weights[6+j]) +
+					(iris.PetalWidth * weights[9+j]) +
+					(1 * weights[12+j])
+				if result < 0 {
+					results[j] = 0
+				} else {
+					results[j] = 1
+				}
 			}
 
-			if versicolor < 0 {
-				versicolor = 0
-			} else {
-				versicolor = 1
+			errors := make([]float64, len(results))
+			for j, species := range specieses {
+				if iris.Species == species {
+					errors[j] = 1 - results[j]
+				} else {
+					errors[j] = 0 - results[j]
+				}
 			}
 
-			if virginica < 0 {
-				virginica = 0
-			} else {
-				virginica = 1
+			for j := range errors {
+				weights[0+j] = weights[0+j] + (learningRate * iris.SepalLength * errors[j])
+				weights[3+j] = weights[3+j] + (learningRate * iris.SepalWidth * errors[j])
+				weights[6+j] = weights[6+j] + (learningRate * iris.PetalLength * errors[j])
+				weights[9+j] = weights[9+j] + (learningRate * iris.PetalWidth * errors[j])
+				weights[12+j] = weights[12+j] + (learningRate * 1 * errors[j])
 			}
-
-			errorSetosa := 0.
-			errorVersicolor := 0.
-			errorVirginica := 0.
-
-			if iris.Species == "setosa" {
-				errorSetosa = 1 - setosa
-				errorVersicolor = 0 - versicolor
-				errorVirginica = 0 - virginica
-			} else if iris.Species == "versicolor" {
-				errorSetosa = 0 - setosa
-				errorVersicolor = 1 - versicolor
-				errorVirginica = 0 - virginica
-			} else if iris.Species == "virginica" {
-				errorSetosa = 0 - setosa
-				errorVersicolor = 0 - versicolor
-				errorVirginica = 1 - virginica
-			}
-
-			weights[0] = weights[0] + (learningRate * iris.SepalLength * errorSetosa)
-			weights[1] = weights[1] + (learningRate * iris.SepalLength * errorVersicolor)
-			weights[2] = weights[2] + (learningRate * iris.SepalLength * errorVirginica)
-			weights[3] = weights[3] + (learningRate * iris.SepalWidth * errorSetosa)
-			weights[4] = weights[4] + (learningRate * iris.SepalWidth * errorVersicolor)
-			weights[5] = weights[5] + (learningRate * iris.SepalWidth * errorVirginica)
-			weights[6] = weights[6] + (learningRate * iris.PetalLength * errorSetosa)
-			weights[7] = weights[7] + (learningRate * iris.PetalLength * errorVersicolor)
-			weights[8] = weights[8] + (learningRate * iris.PetalLength * errorVirginica)
-			weights[9] = weights[9] + (learningRate * iris.PetalWidth * errorSetosa)
-			weights[10] = weights[10] + (learningRate * iris.PetalWidth * errorVersicolor)
-			weights[11] = weights[11] + (learningRate * iris.PetalWidth * errorVirginica)
-			weights[12] = weights[12] + (learningRate * 1 * errorSetosa)
-			weights[13] = weights[13] + (learningRate * 1 * errorVersicolor)
-			weights[14] = weights[14] + (learningRate * 1 * errorVirginica)
 		}
 
 		if (i+1)%50 == 0 {
@@ -121,29 +92,22 @@ func main() {
 	fmt.Println(" [+] Start predict training data using trained model")
 	correctPredict := 0
 	for _, iris := range irisDataset {
-		setosa := (iris.SepalLength * weights[0]) +
-			(iris.SepalWidth * weights[3]) +
-			(iris.PetalLength * weights[6]) +
-			(iris.PetalWidth * weights[9]) +
-			(1 * weights[12])
-		versicolor := (iris.SepalLength * weights[1]) +
-			(iris.SepalWidth * weights[4]) +
-			(iris.PetalLength * weights[7]) +
-			(iris.PetalWidth * weights[10]) +
-			(1 * weights[13])
-		virginica := (iris.SepalLength * weights[2]) +
-			(iris.SepalWidth * weights[5]) +
-			(iris.PetalLength * weights[8]) +
-			(iris.PetalWidth * weights[11]) +
-			(1 * weights[14])
+		results := make([]float64, len(specieses))
+		for j := range specieses {
+			results[j] = (iris.SepalLength * weights[0+j]) +
+				(iris.SepalWidth * weights[3+j]) +
+				(iris.PetalLength * weights[6+j]) +
+				(iris.PetalWidth * weights[9+j]) +
+				(1 * weights[12+j])
+		}
 
 		result := ""
-		if setosa > versicolor && setosa > virginica {
-			result = "setosa"
-		} else if versicolor > setosa && versicolor > virginica {
-			result = "versicolor"
-		} else if virginica > setosa && virginica > versicolor {
-			result = "virginica"
+		if results[0] > results[1] && results[0] > results[2] {
+			result = specieses[0]
+		} else if results[1] > results[0] && results[1] > results[2] {
+			result = specieses[1]
+		} else if results[2] > results[0] && results[2] > results[1] {
+			result = specieses[2]
 		}
 
 		if result == iris.Species {
