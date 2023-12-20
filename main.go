@@ -117,6 +117,43 @@ func main() {
 	}
 
 	fmt.Println(" [+] Done training the model")
+
+	fmt.Println(" [+] Start predict training data using trained model")
+	correctPredict := 0
+	for _, iris := range irisDataset {
+		setosa := (iris.SepalLength * weights[0]) +
+			(iris.SepalWidth * weights[3]) +
+			(iris.PetalLength * weights[6]) +
+			(iris.PetalWidth * weights[9]) +
+			(1 * weights[12])
+		versicolor := (iris.SepalLength * weights[1]) +
+			(iris.SepalWidth * weights[4]) +
+			(iris.PetalLength * weights[7]) +
+			(iris.PetalWidth * weights[10]) +
+			(1 * weights[13])
+		virginica := (iris.SepalLength * weights[2]) +
+			(iris.SepalWidth * weights[5]) +
+			(iris.PetalLength * weights[8]) +
+			(iris.PetalWidth * weights[11]) +
+			(1 * weights[14])
+
+		result := ""
+		if setosa > versicolor && setosa > virginica {
+			result = "setosa"
+		} else if versicolor > setosa && versicolor > virginica {
+			result = "versicolor"
+		} else if virginica > setosa && virginica > versicolor {
+			result = "virginica"
+		}
+
+		if result == iris.Species {
+			correctPredict++
+		}
+	}
+	fmt.Println(" [+] Done predicting training data")
+	fmt.Print(" \tAccuracy: ")
+	fmt.Printf("%.2f", float64(correctPredict)/float64(len(irisDataset))*100)
+	fmt.Println("%")
 }
 
 func readCSV(file string) []*Iris {
