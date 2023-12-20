@@ -18,13 +18,6 @@ type Iris struct {
 func main() {
 	irisDataset := readCSV("assets/iris-dataset.csv")
 
-	// specieses := []string{}
-	// for _, iris := range irisDataset {
-	// 	if !slices.Contains(specieses, iris.Species) {
-	// 		specieses = append(specieses, iris.Species)
-	// 	}
-	// }
-
 	epoch := 1000
 	learningRate := .2
 	weights := make([]float64, 15)
@@ -104,9 +97,9 @@ func main() {
 			weights[6] = weights[6] + (learningRate * iris.PetalLength * errorSetosa)
 			weights[7] = weights[7] + (learningRate * iris.PetalLength * errorVersicolor)
 			weights[8] = weights[8] + (learningRate * iris.PetalLength * errorVirginica)
-			weights[9] = weights[9] + (learningRate * iris.PetalLength * errorSetosa)
-			weights[10] = weights[10] + (learningRate * iris.PetalLength * errorVersicolor)
-			weights[11] = weights[11] + (learningRate * iris.PetalLength * errorVirginica)
+			weights[9] = weights[9] + (learningRate * iris.PetalWidth * errorSetosa)
+			weights[10] = weights[10] + (learningRate * iris.PetalWidth * errorVersicolor)
+			weights[11] = weights[11] + (learningRate * iris.PetalWidth * errorVirginica)
 			weights[12] = weights[12] + (learningRate * 1 * errorSetosa)
 			weights[13] = weights[13] + (learningRate * 1 * errorVersicolor)
 			weights[14] = weights[14] + (learningRate * 1 * errorVirginica)
